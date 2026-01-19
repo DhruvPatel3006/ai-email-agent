@@ -1,0 +1,575 @@
+{
+  "name": "ai email classifier & responder",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "labelIds": [
+            "INBOX"
+          ],
+          "readStatus": "unread"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3f610266-d802-4afb-aaad-401a9d010767",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CICuaL7Ku3TndboP",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $node[\"HTTP Request\"].json[\"choices\"][0][\"message\"][\"content\"] }}",
+                    "rightValue": "Sales",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "d1737ecd-e991-4943-b585-6ef6544253b2"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Sales"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "41bd673c-a619-4f9e-8d86-97520630aa9a",
+                    "leftValue": "={{ $node[\"HTTP Request\"].json[\"choices\"][0][\"message\"][\"content\"] }}",
+                    "rightValue": "Support",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Support"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "4b66e19f-cb5e-43a7-9358-715f7ae82da9",
+                    "leftValue": "={{ $node[\"HTTP Request\"].json[\"choices\"][0][\"message\"][\"content\"] }}",
+                    "rightValue": "Spam",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Spam"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d1d0bd22-8879-4d4f-aa9b-3bdd54ffc27a",
+                    "leftValue": "={{ $node[\"HTTP Request\"].json[\"choices\"][0][\"message\"][\"content\"] }}",
+                    "rightValue": "Partnership",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Partnership"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "78aaee2a-ae69-4f7c-8bd3-76e5eb2f8066",
+                    "leftValue": "={{ $node[\"HTTP Request\"].json[\"choices\"][0][\"message\"][\"content\"] }}",
+                    "rightValue": "Billing",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Billing"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "bf4e4da5-1627-4fa1-8bbc-2e50e01d48d0",
+                    "leftValue": "={{ $node[\"HTTP Request\"].json[\"choices\"][0][\"message\"][\"content\"] }}",
+                    "rightValue": "Personal",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Personal"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        544,
+        0
+      ],
+      "id": "52941165-6210-47af-a04f-d2514dbd486f",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": `Classify the following email into exactly one category: Sales, Support, Partnership, Billing, Personal, or Spam.\n\nEmail Content: ${$('Gmail Trigger').item.json.snippet}\n\nOutput ONLY the category name. Do not add punctuation.`\n    }\n  ]\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        272,
+        0
+      ],
+      "id": "a019e5c6-11b3-4ab6-8494-40ed58da7907",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0UybGIhrlwRi3x2S",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": `You are a professional Sales Assistant.\n      Write a polite and persuasive email reply to this potential customer.\n      \n      Guidelines:\n      1. Thank them for reaching out.\n      2. Briefly mention that our solution is perfect for their needs.\n      3. Keep it under 100 words.\n      4. End with a clear Call to Action: Ask if they would like to schedule a quick 15-minute demo.\n\n      Customer Email: ${$('Gmail Trigger').item.json.snippet}`\n    }\n  ],\n  \"temperature\": 0.7\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1024,
+        -480
+      ],
+      "id": "4a3a3c12-e801-45c6-bf3b-28022957fe76",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0UybGIhrlwRi3x2S",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $('Gmail Trigger').item.json.Subject }}",
+        "message": "={{$node[\"HTTP Request1\"].json[\"choices\"][0][\"message\"][\"content\"]}}",
+        "options": {
+          "sendTo": "={{ $('Gmail Trigger').item.json.From }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1408,
+        -480
+      ],
+      "id": "764107a8-53be-490a-8a2b-7573d79e40a9",
+      "name": "Create a draft",
+      "webhookId": "6c4e5c25-d564-4879-bf32-ce2e3f17806c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CICuaL7Ku3TndboP",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": `You are a helpful customer support agent.\n      Write a polite, empathetic reply acknowledging the issue.\n      Tell them you have logged the ticket and a human agent will review it within 24 hours.\n      Original Email: ${$('Gmail Trigger').item.json.snippet}`\n    }\n  ],\n  \"temperature\": 0.5\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1024,
+        -304
+      ],
+      "id": "c37257b1-93b4-4d39-9262-e3f7a0bc9429",
+      "name": "writer support",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0UybGIhrlwRi3x2S",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $('Gmail Trigger').item.json.Subject }}",
+        "message": "={{ $node[\"Writer Support\"].json[\"choices\"][0][\"message\"][\"content\"] }}",
+        "options": {
+          "sendTo": "={{ $('Gmail Trigger').item.json.From }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1408,
+        -304
+      ],
+      "id": "ca41ad57-8a43-4855-8b6d-6cfc3adf8464",
+      "name": "Create a draft1",
+      "webhookId": "6c4e5c25-d564-4879-bf32-ce2e3f17806c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CICuaL7Ku3TndboP",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": `You are a Partnerships Manager. Write a professional reply thanking them for the interest.\n      Ask them to send a formal proposal or pitch deck for our team to review.\n      Do not promise a meeting yet.\n      Original Email: ${$('Gmail Trigger').item.json.snippet}`\n    }\n  ],\n  \"temperature\": 0.7\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1024,
+        16
+      ],
+      "id": "551989cd-0841-4874-b1f4-51238826d7d5",
+      "name": "writer partner",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0UybGIhrlwRi3x2S",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $('Gmail Trigger').item.json.Subject }}",
+        "message": "={{ $node[\"Writer Partner\"].json[\"choices\"][0][\"message\"][\"content\"] }}",
+        "options": {
+          "sendTo": "={{ $('Gmail Trigger').item.json.From }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1408,
+        16
+      ],
+      "id": "68aadd07-313f-4663-bf80-120cb739d2e0",
+      "name": "Create a draft2",
+      "webhookId": "6c4e5c25-d564-4879-bf32-ce2e3f17806c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CICuaL7Ku3TndboP",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"model\": \"llama-3.3-70b-versatile\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": `You are a Finance Assistant. Write a short reply stating that you have forwarded their request to the billing department.\n      Assure them that any billing errors will be corrected immediately.\n      Original Email: ${$('Gmail Trigger').item.json.snippet}`\n    }\n  ],\n  \"temperature\": 0.3\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1024,
+        192
+      ],
+      "id": "62d41723-ff9a-47cb-8799-a8b75f556002",
+      "name": "writer billing",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0UybGIhrlwRi3x2S",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $('Gmail Trigger').item.json.Subject }}",
+        "message": "={{ $node[\"writer billing\"].json[\"choices\"][0][\"message\"][\"content\"] }}",
+        "options": {
+          "sendTo": "={{ $('Gmail Trigger').item.json.From }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1408,
+        192
+      ],
+      "id": "7048a85d-12b2-4375-b90c-518310ed7ecb",
+      "name": "Create a draft3",
+      "webhookId": "6c4e5c25-d564-4879-bf32-ce2e3f17806c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CICuaL7Ku3TndboP",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.labels[1].id }}",
+        "labelIds": [
+          "SPAM"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1216,
+        -144
+      ],
+      "id": "5b108000-09be-4f66-a28d-10ae39c976dd",
+      "name": "Add label to message",
+      "webhookId": "e401eb55-b7ff-42b8-8f32-a20b34a738ce",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CICuaL7Ku3TndboP",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "writer support",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label to message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "writer partner",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "writer billing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Create a draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "writer support": {
+      "main": [
+        [
+          {
+            "node": "Create a draft1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "writer partner": {
+      "main": [
+        [
+          {
+            "node": "Create a draft2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "writer billing": {
+      "main": [
+        [
+          {
+            "node": "Create a draft3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1
+  },
+  "versionId": "3020b236-b303-45e8-8724-4ffac6aa3ba9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "184fa0bd1d9285941c6f1114f6180aa0e9db8251e85b1663992718de4268cde7"
+  },
+  "id": "hVfSwsanAFugU9so4xxEy",
+  "tags": []
+}
