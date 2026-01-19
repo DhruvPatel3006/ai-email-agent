@@ -2,7 +2,7 @@
 
 A smart workflow that organizes my inbox and drafts replies using **n8n** and **Llama 3.3**.
 
-![Workflow Diagram](workflow-diagram.png)
+![Workflow Diagram](workflow_diagram.png)
 
 ## 💡 Why I Built This
 I wanted to see if I could automate the "boring" parts of email (sorting, tagging, standard replies) without handing over complete control to an AI. Standard email filters are too rigid—they rely on keywords. I needed something that actually *understands* the intent of a message, whether it's a potential client, a billing issue, or just spam.
