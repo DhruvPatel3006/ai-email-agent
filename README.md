@@ -33,7 +33,7 @@ One of my biggest priorities was making sure the AI didn't hallucinate or reply 
 * **Spam Trap:** Instead of replying to spam (which verifies the email address to spammers), the agent silently moves it to the trash.
 
 ## Tech Stack
-* **Workflow Automation:** n8n (Self-hosted or Cloud)
+* **Workflow Automation:** n8n (Cloud)
 * **LLM Inference:** Groq API (Running Llama 3.3-70b-versatile for speed)
 * **Integrations:** Gmail API
 * **Data Handling:** JSON & JavaScript for node mapping
