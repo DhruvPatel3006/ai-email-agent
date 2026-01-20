@@ -1,3 +1,5 @@
+![Built with n8n](https://img.shields.io/badge/Built%20with-n8n-orange)
+
 # AI Email Orchestrator 
 
 A smart workflow that organizes my inbox and drafts replies using **n8n** and **Llama 3.3**.
